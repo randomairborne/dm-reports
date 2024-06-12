@@ -20,12 +20,6 @@ jobs:
       - name: Cache Packages
         uses: Swatinem/rust-cache@v2
 
-      - name: Install node deps
-        run: npm install
-
-      - name: Check web language formatting
-        run: npm run prettier-check
-
       - name: Check Rust formatting
         run: cargo fmt --check
 

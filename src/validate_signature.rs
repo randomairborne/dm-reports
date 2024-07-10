@@ -59,6 +59,7 @@ impl std::error::Error for SignatureValidationFailure {}
 
 /// Parsing the public key failed.
 #[derive(Debug)]
+#[allow(dead_code)]
 pub enum KeyError {
     /// The public key was invalid hexadecimal.
     Hex(FromHexError),

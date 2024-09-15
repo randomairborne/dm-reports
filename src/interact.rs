@@ -96,13 +96,9 @@ pub async fn interact(
                 .await
                 .unwrap_or_else(|e| e.to_string()),
         ),
-        _ => unsupported(),
+        _ => interaction_message("Unsupported interaction kind".to_string()),
     };
     Json(resp)
-}
-
-fn unsupported() -> InteractionResponse {
-    interaction_message("Unsupported interaction kind".to_string())
 }
 
 #[derive(Debug, thiserror::Error)]

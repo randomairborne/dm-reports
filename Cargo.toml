@@ -2,6 +2,7 @@
 name = "dm-reports"
 version = "0.1.0"
 edition = "2021"
+default-run = "dm-reports"
 
 [dependencies]
 twilight-util = { version = "0.16.0-rc.1", features = ["link", "builder"] }

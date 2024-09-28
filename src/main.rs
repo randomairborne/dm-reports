@@ -12,13 +12,10 @@ use axum::{
 use http::StatusCode;
 use tokio::net::TcpListener;
 use tracing::Level;
-use twilight_http::Client;
-use twilight_model::id::{
-    marker::{ApplicationMarker, WebhookMarker},
-    Id,
-};
+use twilight_http::{client::ClientBuilder, Client};
+use twilight_model::id::{marker::WebhookMarker, Id};
 
-use crate::{interact::register_commands, validate_signature::Key};
+use crate::validate_signature::Key;
 
 mod interact;
 mod validate_signature;
@@ -33,8 +30,9 @@ async fn main() {
         .json()
         .init();
 
-    let token = valk_utils::get_var("DISCORD_TOKEN");
     let webhook_url = valk_utils::get_var("WEBHOOK_URL");
+    let verify_key = Key::from_hex(valk_utils::get_var("VERIFY_KEY").as_bytes())
+        .expect("Failed to convert verify_key to a verifying key");
 
     let (webhook_id, Some(webhook_token)) =
         twilight_util::link::webhook::parse(&webhook_url).expect("Got invalid webhook URL")
@@ -48,29 +46,14 @@ async fn main() {
     };
 
     let config = Config { hook };
-
-    let client = Client::new(token.clone());
-
-    let current_user_application = client
-        .current_user_application()
-        .await
-        .unwrap()
-        .model()
-        .await
-        .unwrap();
-
-    let verify_key = Key::from_hex(current_user_application.verify_key.as_bytes()).unwrap();
-    let application_id = current_user_application.id;
+    let client = ClientBuilder::new().build();
 
     let state = InnerAppState {
         client,
         verify_key,
         config,
-        application_id,
     };
     let state = AppState(Arc::new(state));
-
-    register_commands(&state).await.unwrap();
 
     let app = Router::new()
         .route("/api/interactions", post(interact::interact))
@@ -98,7 +81,6 @@ impl Deref for AppState {
 
 pub struct InnerAppState {
     client: Client,
-    application_id: Id<ApplicationMarker>,
     verify_key: Key,
     config: Config,
 }

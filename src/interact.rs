@@ -5,19 +5,13 @@ use axum::{
     extract::{FromRequest, State},
     Json,
 };
-use serde_json::json;
-use twilight_http::{request::Request, routing::Route};
 use twilight_model::{
-    application::{
-        command::{Command, CommandType},
-        interaction::{Interaction, InteractionData, InteractionType},
-    },
+    application::interaction::{Interaction, InteractionData, InteractionType},
     channel::message::MessageFlags,
     http::interaction::{InteractionResponse, InteractionResponseType},
     id::Id,
 };
 use twilight_util::builder::{
-    command::CommandBuilder,
     embed::{EmbedBuilder, EmbedFieldBuilder},
     InteractionResponseDataBuilder,
 };
@@ -26,8 +20,6 @@ use crate::{
     validate_signature::{SIGNATURE_HEADER, TIMESTAMP_HEADER},
     AppState, Error as HttpError,
 };
-
-const REPORT_COMMAND_NAME: &str = "Report to Minecraft Discord";
 
 pub fn interaction_message(description: String) -> InteractionResponse {
     let embed = EmbedBuilder::new().description(description).build();
@@ -177,25 +169,4 @@ async fn command(state: AppState, interaction: Interaction) -> Result<String, Er
         .embeds(&[embed])
         .await?;
     Ok("Report submitted. Thank you!".to_string())
-}
-
-#[instrument(skip_all)]
-pub async fn register_commands(state: &AppState) -> Result<(), Error> {
-    // This horribleness brought to you by Advaith and Discord's fucking horrendous GA policies
-    let command_struct = CommandBuilder::new(REPORT_COMMAND_NAME, "", CommandType::Message).build();
-    let mut command_value = serde_json::to_value(command_struct)?;
-    let Some(cmd_value_object) = command_value.as_object_mut() else {
-        unreachable!("Serializing a struct and getting not-a-map should be impossible");
-    };
-
-    cmd_value_object.insert("integration_types".to_string(), json!([1]));
-    cmd_value_object.insert("contexts".to_string(), json!([2]));
-
-    let request = Request::builder(&Route::SetGlobalCommands {
-        application_id: state.application_id.get(),
-    })
-    .json(&json!([cmd_value_object]))
-    .build()?;
-    state.client.request::<Vec<Command>>(request).await?;
-    Ok(())
 }

@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  REGISTRY_IMAGE: ghcr.io/randomairborne/dm-reports
+  REGISTRY_PREFIX: ghcr.io/randomairborne
 
 permissions:
   packages: write
@@ -28,6 +28,7 @@ jobs:
             llvm: x86_64
           - docker: linux/arm64
             llvm: aarch64
+        bin: ["dm-reports-create-cmds", "dm-reports"]
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -50,7 +51,8 @@ jobs:
           platforms: ${{ matrix.platform.docker }}
           build-args: |
             LLVMTARGETARCH=${{ matrix.platform.llvm }}
-          outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+            BINARY=${{ matrix.bin }}
+          outputs: type=image,name=${{ env.REGISTRY_PREFIX }}/${{ matrix.bin }},push-by-digest=true,name-canonical=true,push=true
 
       - name: Export digest
         run: |
@@ -61,7 +63,7 @@ jobs:
       - name: Upload digest
         uses: actions/upload-artifact@v4
         with:
-          name: digests-${{ matrix.platform.llvm }}
+          name: digests-${{ matrix.bin }}-${{ matrix.platform.llvm }}
           path: /tmp/digests/*
           if-no-files-found: error
           retention-days: 1
@@ -69,12 +71,16 @@ jobs:
   merge:
     runs-on: ubuntu-latest
     needs: [build]
+    strategy:
+      fail-fast: false
+      matrix:
+        bin: ["dm-reports-create-cmds", "dm-reports"]
     steps:
       - name: Download digests
         uses: actions/download-artifact@v4
         with:
           path: /tmp/digests
-          pattern: digests-*
+          pattern: digests-${{ matrix.bin }}-*
           merge-multiple: true
 
       - name: Set up Docker Buildx
@@ -90,5 +96,5 @@ jobs:
       - name: Create manifest list and push
         working-directory: /tmp/digests
         run: |
-          docker buildx imagetools create --tag ${{ env.REGISTRY_IMAGE }}:latest --tag ${{ env.REGISTRY_IMAGE }}:git-${{ github.sha }} $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)
+          docker buildx imagetools create --tag ${{ env.REGISTRY_PREFIX }}/${{ matrix.bin }}:latest --tag ${{ env.REGISTRY_PREFIX }}/${{ matrix.bin }}:git-${{ github.sha }} $(printf '${{ env.REGISTRY_PREFIX }}/${{ matrix.bin }}@sha256:%s ' *)
 

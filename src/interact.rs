@@ -45,7 +45,6 @@ impl Deref for ExtractInteraction {
     }
 }
 
-#[axum::async_trait]
 impl FromRequest<AppState> for ExtractInteraction {
     type Rejection = HttpError;
 

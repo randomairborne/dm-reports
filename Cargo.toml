@@ -5,12 +5,12 @@ edition = "2021"
 default-run = "dm-reports"
 
 [dependencies]
-twilight-util = { version = "0.16.0-rc.1", features = ["link", "builder"] }
+twilight-util = { version = "0.16.0", features = ["link", "builder"] }
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 tracing-subscriber = { version = "0.3", features = ["json"] }
 axum = { version = "0.8", features = ["http2"] }
-twilight-model = "0.16.0-rc.1"
-twilight-http = "0.16.0-rc.1"
+twilight-model = "0.16.0"
+twilight-http = "0.16.0"
 ed25519-dalek = "2"
 valk-utils = "0.1"
 serde_json = "1"

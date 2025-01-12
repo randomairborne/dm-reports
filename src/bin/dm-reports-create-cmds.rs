@@ -1,6 +1,6 @@
 use serde_json::json;
 use twilight_http::{request::Request, routing::Route, Client};
-use twilight_model::application::command::{Command, CommandType};
+use twilight_model::{application::{command::{Command, CommandType}, interaction::InteractionContextType}, oauth::ApplicationIntegrationType};
 use twilight_util::builder::command::CommandBuilder;
 
 #[tokio::main]
@@ -17,26 +17,11 @@ async fn main() {
     let discord_server_name = std::env::args().nth(1).expect(
         "This application takes an argument for the name of the server you take DM reports for",
     );
-    // This horribleness brought to you by Advaith and Discord's fucking horrendous GA policies
-    let command_struct = CommandBuilder::new(
+    let command = CommandBuilder::new(
         format!("Report to {}", discord_server_name),
         "",
         CommandType::Message,
-    )
+    ).integration_types([ApplicationIntegrationType::UserInstall]).contexts([InteractionContextType::PrivateChannel])
     .build();
-    let mut command_value = serde_json::to_value(command_struct).unwrap();
-    let Some(cmd_value_object) = command_value.as_object_mut() else {
-        unreachable!("Serializing a struct and getting not-a-map should be impossible");
-    };
-
-    cmd_value_object.insert("integration_types".to_string(), json!([1]));
-    cmd_value_object.insert("contexts".to_string(), json!([2]));
-
-    let request = Request::builder(&Route::SetGlobalCommands {
-        application_id: cua.id.get(),
-    })
-    .json(&json!([cmd_value_object]))
-    .build()
-    .unwrap();
-    client.request::<Vec<Command>>(request).await.unwrap();
+    client.interaction(cua.id).set_global_commands(&[command]).await.unwrap();
 }

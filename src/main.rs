@@ -120,6 +120,7 @@ impl Error {
 
 impl IntoResponse for Error {
     fn into_response(self) -> Response {
+        error!(error = ?self, "Error processing request");
         (self.status(), "").into_response()
     }
 }

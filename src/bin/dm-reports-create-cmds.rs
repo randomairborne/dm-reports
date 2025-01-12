@@ -1,6 +1,12 @@
 use serde_json::json;
 use twilight_http::{request::Request, routing::Route, Client};
-use twilight_model::{application::{command::{Command, CommandType}, interaction::InteractionContextType}, oauth::ApplicationIntegrationType};
+use twilight_model::{
+    application::{
+        command::{Command, CommandType},
+        interaction::InteractionContextType,
+    },
+    oauth::ApplicationIntegrationType,
+};
 use twilight_util::builder::command::CommandBuilder;
 
 #[tokio::main]
@@ -21,7 +27,13 @@ async fn main() {
         format!("Report to {}", discord_server_name),
         "",
         CommandType::Message,
-    ).integration_types([ApplicationIntegrationType::UserInstall]).contexts([InteractionContextType::PrivateChannel])
+    )
+    .integration_types([ApplicationIntegrationType::UserInstall])
+    .contexts([InteractionContextType::PrivateChannel])
     .build();
-    client.interaction(cua.id).set_global_commands(&[command]).await.unwrap();
+    client
+        .interaction(cua.id)
+        .set_global_commands(&[command])
+        .await
+        .unwrap();
 }

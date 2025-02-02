@@ -1,9 +1,6 @@
 use twilight_http::Client;
 use twilight_model::{
-    application::{
-        command::CommandType,
-        interaction::InteractionContextType,
-    },
+    application::{command::CommandType, interaction::InteractionContextType},
     oauth::ApplicationIntegrationType,
 };
 use twilight_util::builder::command::CommandBuilder;

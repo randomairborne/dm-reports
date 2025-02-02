@@ -1,17 +1,13 @@
-name: Build container
-
+name: CI
 on:
   push:
     branches:
       - main
   workflow_dispatch:
 
-env:
-  REGISTRY_PREFIX: ghcr.io/randomairborne
-
 permissions:
-  packages: write
   contents: read
+  packages: write
 
 jobs:
   check:
@@ -30,7 +26,11 @@ jobs:
           - docker: linux/arm64
             gha-image: ubuntu-24.04-arm
             slug: aarch64
-        bin: ["dm-reports", "dm-reports-create-cmds"]
+        package:
+          - image: ghcr.io/randomairborne/dm-reports
+            name: bot
+          - image: ghcr.io/randomairborne/dm-reports-create-commands
+            name: create-commands
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -49,10 +49,10 @@ jobs:
         id: build
         uses: docker/build-push-action@v6
         with:
+          file: ./${{ matrix.package.name }}/Dockerfile
           context: .
           platforms: ${{ matrix.platform.docker }}
-          outputs: type=image,name=${{ env.REGISTRY_PREFIX }}/${{ matrix.bin }},push-by-digest=true,name-canonical=true,push=true
-          build-args: BINARY=${{ matrix.bin }}
+          outputs: type=image,name=${{ matrix.package.image }},push-by-digest=true,name-canonical=true,push=true
 
       - name: Export digest
         run: |
@@ -63,7 +63,7 @@ jobs:
       - name: Upload digest
         uses: actions/upload-artifact@v4
         with:
-          name: digests-${{ matrix.bin }}-${{ matrix.platform.slug }}
+          name: digests-${{ matrix.package.name }}-${{ matrix.platform.slug }}
           path: /tmp/digests/*
           if-no-files-found: error
           retention-days: 1
@@ -74,13 +74,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        bin: ["dm-reports", "dm-reports-create-cmds"]
+        package:
+          - image: ghcr.io/randomairborne/dm-reports
+            name: bot
+          - image: ghcr.io/randomairborne/dm-reports-create-commands
+            name: create-commands
     steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
       - name: Download digests
         uses: actions/download-artifact@v4
         with:
           path: /tmp/digests
-          pattern: digests-${{ matrix.bin }}-*
+          pattern: digests-${{ matrix.package.name }}-*
           merge-multiple: true
 
       - name: Set up Docker Buildx
@@ -96,4 +103,4 @@ jobs:
       - name: Create manifest list and push
         working-directory: /tmp/digests
         run: |
-          docker buildx imagetools create --tag ${{ env.REGISTRY_PREFIX }}/${{ matrix.bin }}:latest $(printf '${{ env.REGISTRY_PREFIX }}/${{ matrix.bin }}@sha256:%s ' *)
+          docker buildx imagetools create --tag ${{ matrix.package.image }}:latest --tag ${{ matrix.package.image }}:git-${{ github.sha }} $(printf '${{ matrix.package.image }}@sha256:%s ' *)

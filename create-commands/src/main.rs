@@ -1,15 +1,14 @@
-use serde_json::json;
-use twilight_http::{request::Request, routing::Route, Client};
+use twilight_http::Client;
 use twilight_model::{
     application::{
-        command::{Command, CommandType},
+        command::CommandType,
         interaction::InteractionContextType,
     },
     oauth::ApplicationIntegrationType,
 };
 use twilight_util::builder::command::CommandBuilder;
 
-#[tokio::main]
+#[tokio::main(flavor = "current_thread")]
 async fn main() {
     let discord_token = valk_utils::get_var("DISCORD_TOKEN");
     let client = Client::new(discord_token);

@@ -1,0 +1,11 @@
+[package]
+name = "dm-reports-create-commands"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1", features = ["rt", "macros"] }
+twilight-util = { version = "0.16.0", features = ["link", "builder"] }
+twilight-model = "0.16.0"
+twilight-http = "0.16.0"
+valk-utils = "0.1"

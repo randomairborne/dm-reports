@@ -1,21 +1,20 @@
-ARG LLVMTARGETARCH
-FROM --platform=${BUILDPLATFORM} ghcr.io/randomairborne/cross-cargo:${LLVMTARGETARCH} AS builder
-ARG LLVMTARGETARCH
-ARG BINARY
+FROM rust:alpine AS builder
+ARG BINARY=dm-reports
+
+RUN apk add musl-dev
 
 WORKDIR /build
 
 COPY . .
 
-RUN cargo build --release --target ${LLVMTARGETARCH}-unknown-linux-musl --bin ${BINARY}
+RUN cargo build --release --bin ${BINARY}
 
 FROM scratch
-ARG LLVMTARGETARCH
-ARG BINARY
+ARG BINARY=dm-reports
 
 WORKDIR /
 
-COPY --from=builder /build/target/${LLVMTARGETARCH}-unknown-linux-musl/release/${BINARY} /usr/bin/${BINARY}
+COPY --from=builder /build/target/release/${BINARY} /usr/bin/${BINARY}
 
 EXPOSE 8080
 

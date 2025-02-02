@@ -52,7 +52,7 @@ jobs:
           context: .
           platforms: ${{ matrix.platform.docker }}
           outputs: type=image,name=${{ env.REGISTRY_PREFIX }}/${{ matrix.bin }},push-by-digest=true,name-canonical=true,push=true
-          build-args: ${{ matrix.bin }}  
+          build-args: BINARY=${{ matrix.bin }}
 
       - name: Export digest
         run: |

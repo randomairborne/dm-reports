@@ -5,15 +5,15 @@ use std::{
 };
 
 use axum::{
+    Router,
     response::{IntoResponse, Response},
     routing::post,
-    Router,
 };
 use http::StatusCode;
 use tokio::net::TcpListener;
 use tracing::Level;
-use twilight_http::{client::ClientBuilder, Client};
-use twilight_model::id::{marker::WebhookMarker, Id};
+use twilight_http::{Client, client::ClientBuilder};
+use twilight_model::id::{Id, marker::WebhookMarker};
 
 use crate::validate_signature::Key;
 

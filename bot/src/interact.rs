@@ -1,9 +1,9 @@
 use std::ops::Deref;
 
 use axum::{
+    Json,
     body::Bytes,
     extract::{FromRequest, State},
-    Json,
 };
 use twilight_model::{
     application::interaction::{Interaction, InteractionData, InteractionType},
@@ -12,13 +12,13 @@ use twilight_model::{
     id::Id,
 };
 use twilight_util::builder::{
-    embed::{EmbedBuilder, EmbedFieldBuilder},
     InteractionResponseDataBuilder,
+    embed::{EmbedBuilder, EmbedFieldBuilder},
 };
 
 use crate::{
-    validate_signature::{SIGNATURE_HEADER, TIMESTAMP_HEADER},
     AppState, Error as HttpError,
+    validate_signature::{SIGNATURE_HEADER, TIMESTAMP_HEADER},
 };
 
 pub fn interaction_message(description: String) -> InteractionResponse {

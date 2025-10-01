@@ -1,5 +1,10 @@
 # dm-reports
 
+> [!WARNING]
+> This project is no longer maintained. If you need it, still use it, or need help with it,
+> please join [my discord](https://valk.sh/discord) or
+> [email me](mailto:valk@randomairborne.dev).
+
 Simple DM reporting system for discord. Easily verifiable reports of users scamming and spamming in DMs.
 
 ## Setup
